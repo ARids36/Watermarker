@@ -47,7 +47,7 @@ def open_file():
 
 def add_watermark(text, dark):
     """Adds a chosen text watermark to a preloaded image"""
-    global chosen_image, canvas
+    global chosen_image, canvas, watermarked_image
 
     if dark:
         fill = (0, 0, 0, 255)
@@ -84,7 +84,14 @@ def add_watermark(text, dark):
     canvas.config(width=chosen_image.width, height=chosen_image.height)
     canvas.image = tk_image
     canvas.create_image(img_width // 2, img_height // 2, image=tk_image)
-    canvas.grid(column=0, row=5, columnspan=3, pady=5)
+    canvas.grid(column=0, row=5, columnspan=4, pady=5)
+
+    # Add save option
+    save_img = Button(text="Save image",
+                      command=save_image,
+                      font=BUTTON_FONT,
+                      bg=LIGHT_BLUE)
+    save_img.grid(column=3, row=3, padx=2)
 
 
 def resize():
@@ -101,9 +108,20 @@ def resize():
     chosen_image = chosen_image.resize((base, hsize), Image.Resampling.LANCZOS)
 
 
+def save_image():
+    global watermarked_image
+    watermarked_image = watermarked_image.convert("RGB")
+    filename = filedialog.asksaveasfile(mode='w', defaultextension=".jpg")
+    if not filename:
+        return
+    watermarked_image.save(filename)
+
+
 # Set variables -------------------
 chosen_image = Image.open("base_img.jpg").convert("RGBA")  # Set initial image
 resize()
+
+watermarked_image = chosen_image  # Set watermarked image variable
 
 # UI Setup ------------------------
 window = Tk()
@@ -115,7 +133,7 @@ title = Label(text="Water Marker",
               font=TITLE_FONT,
               bg=PALE,
               fg=NAVY_BLUE, )
-title.grid(column=0, row=0, columnspan=3, pady=15)
+title.grid(column=0, row=0, columnspan=4, pady=15)
 
 box_label = Label(text="Enter watermark text:",
                   font=BODY_FONT,
@@ -134,19 +152,19 @@ upload_button = Button(text="Upload Image",
                        command=open_file,
                        font=BUTTON_FONT,
                        bg=LIGHT_BLUE)
-upload_button.grid(column=2, row=3, sticky="w")
+upload_button.grid(column=2, row=3, padx=2)
 
 add_light = Button(text="Light Mark",
                    command=lambda: add_watermark(entry_box.get(), False),
                    font=BUTTON_FONT,
                    bg=LIGHT_BLUE)
-add_light.grid(column=0, row=3, sticky="w", padx=2)
+add_light.grid(column=0, row=3, padx=2)
 
 add_dark = Button(text="Dark mark",
                   command=lambda: add_watermark(entry_box.get(), True),
                   font=BUTTON_FONT,
                   bg=LIGHT_BLUE)
-add_dark.grid(column=1, row=3, sticky="w", padx=2)
+add_dark.grid(column=1, row=3, padx=2)
 
 # Canvas
 canvas = Canvas(width=1, height=1, highlightthickness=0, bg=PALE)
